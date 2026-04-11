@@ -64,10 +64,7 @@ export const briefFormSchema = z
     criticalFunctions: z.string().min(10, "Опишіть критичні функції"),
     fileHandling: z.string().min(5, "Опишіть роботу з файлами"),
     exportImport: z.string().min(5, "Опишіть експорт/імпорт"),
-    dataComplexity: z.enum(["basic", "filters", "advanced"], {
-      errorMap: () => ({ message: "Оберіть рівень складності" }),
-    }),
-    dataComplexityNote: z.string().optional().or(z.literal("")),
+    dataComplexity: z.string().min(5, "Будь ласка, опишіть складність роботи з даними"),
 
     // Block 8
     userScenarios: z.string().min(20, "Опишіть сценарії використання"),

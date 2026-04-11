@@ -1,17 +1,7 @@
 import { FormSection } from "@/components/form/FormSection";
-import {
-  RadioGroupInput,
-  RadioOption,
-} from "@/components/form/inputs/RadioGroupInput";
 import { TextAreaInput } from "@/components/form/inputs/TextAreaInput";
 import { BriefFormData } from "@/schemas/brief";
-import { Controller, useFormContext } from "react-hook-form";
-
-const dataComplexityOptions: RadioOption[] = [
-  { label: "Простий пошук і сортування", value: "basic" },
-  { label: "Фільтри за кількома параметрами", value: "filters" },
-  { label: "Розширена фільтрація (як у Excel / Notion)", value: "advanced" },
-];
+import { useFormContext } from "react-hook-form";
 
 export function FunctionalRequirementsStep() {
   const {
@@ -53,27 +43,13 @@ export function FunctionalRequirementsStep() {
           required
         />
 
-        <Controller
-          control={control}
-          name="dataComplexity"
-          render={({ field }) => (
-            <RadioGroupInput
-              label="7.4 Наскільки складною має бути робота з даними (сортування, пошук, фільтрація)?"
-              options={dataComplexityOptions}
-              value={field.value}
-              onChange={field.onChange}
-              error={errors.dataComplexity?.message}
-              required
-            />
-          )}
-        />
-
         <TextAreaInput
-          label="Уточнення щодо роботи з даними"
-          id="dataComplexityNote"
-          placeholder="Параметри пошуку, фільтрації..."
-          {...register("dataComplexityNote")}
-          error={errors.dataComplexityNote?.message}
+          label="7.4 Наскільки складною має бути робота з даними (сортування, пошук, фільтрація)?"
+          id="dataComplexity"
+          placeholder="Опишіть рівень складності: простий пошук, фільтри за параметрами чи розширена фільтрація (як у Excel / Notion)."
+          {...register("dataComplexity")}
+          error={errors.dataComplexity?.message}
+          required
         />
       </div>
     </FormSection>

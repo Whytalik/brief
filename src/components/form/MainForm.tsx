@@ -223,7 +223,6 @@ export default function MainForm({
           "fileHandling",
           "exportImport",
           "dataComplexity",
-          "dataComplexityNote",
         ];
       case 8:
         return [
