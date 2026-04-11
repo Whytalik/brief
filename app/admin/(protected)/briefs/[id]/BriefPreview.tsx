@@ -2,7 +2,7 @@
 
 import { BriefFormData } from "@/schemas/brief";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 interface BriefPreviewProps {
   data: BriefFormData;
