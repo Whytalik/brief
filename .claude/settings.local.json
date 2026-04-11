@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__context7__resolve-library-id",
+      "Bash(pg_isready)",
+      "Bash(psql --version)",
+      "Read(//c/Users/Vitalii/AppData/Local/Temp/claude/C--Users-Vitalii-Desktop-University-Software-Systems-Economics-and-Management-Lab01---Brief/1f51b804-5cfa-40f2-acaf-265e14e39c42/tasks/**)",
+      "Bash(pkill -f \"next dev\")",
+      "Bash(npm run:*)",
+      "Bash(curl -s -X POST http://localhost:3003/api/admin/login -H \"Content-Type: application/json\" -d '{\"password\":\"BAdDJF@!72^VX!x\"}')"
+    ]
+  }
+}
