@@ -23,11 +23,18 @@ function StatCard({
 }
 
 function StatusBadge({ status }: { status: string }) {
-  return status === "SUBMITTED" ? (
-    <span className="badge-submitted">Відправлено</span>
-  ) : (
-    <span className="badge-draft">Чернетка</span>
-  );
+  switch (status) {
+    case "NEW":
+      return <span className="badge-new">Новий</span>;
+    case "REVIEWING":
+      return <span className="badge-reviewing">На розгляді</span>;
+    case "ACCEPTED":
+      return <span className="badge-accepted">Прийнято</span>;
+    case "ARCHIVED":
+      return <span className="badge-archived">Архів</span>;
+    default:
+      return <span className="badge text-slate-400 border border-slate-200">{status}</span>;
+  }
 }
 
 function FormattedDate({ date }: { date: Date | string }) {
@@ -40,16 +47,18 @@ function FormattedDate({ date }: { date: Date | string }) {
   return <span>{formatted || "..."}</span>;
 }
 
+type TabType = "ALL" | "NEW" | "REVIEWING" | "ACCEPTED" | "ARCHIVED";
+
 export default function AdminDashboardPage() {
   const [data, setData] = useState<{
     total: number;
-    submitted: number;
-    draft: number;
+    new: number;
+    reviewing: number;
+    accepted: number;
+    archived: number;
     recent: any[];
   } | null>(null);
-  const [activeTab, setActiveTab] = useState<"ALL" | "DRAFT" | "SUBMITTED">(
-    "ALL",
-  );
+  const [activeTab, setActiveTab] = useState<TabType>("ALL");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -61,8 +70,10 @@ export default function AdminDashboardPage() {
 
         setData({
           total: briefs.length,
-          submitted: briefs.filter((b: any) => b.status === "SUBMITTED").length,
-          draft: briefs.filter((b: any) => b.status === "DRAFT").length,
+          new: briefs.filter((b: any) => b.status === "NEW").length,
+          reviewing: briefs.filter((b: any) => b.status === "REVIEWING").length,
+          accepted: briefs.filter((b: any) => b.status === "ACCEPTED").length,
+          archived: briefs.filter((b: any) => b.status === "ARCHIVED").length,
           recent: briefs,
         });
       } catch (error) {
@@ -87,57 +98,78 @@ export default function AdminDashboardPage() {
       ? data?.recent
       : data?.recent.filter((b) => b.status === activeTab);
 
+  const tabConfigs: Record<TabType, { label: string; activeClass: string }> = {
+    ALL: { label: "Всі", activeClass: "bg-white text-slate-950 shadow-sm" },
+    NEW: { label: "Нові", activeClass: "bg-blue-600 text-white shadow-md shadow-blue-100" },
+    REVIEWING: { label: "На розгляді", activeClass: "bg-amber-500 text-white shadow-md shadow-amber-100" },
+    ACCEPTED: { label: "Прийняті", activeClass: "bg-emerald-600 text-white shadow-md shadow-emerald-100" },
+    ARCHIVED: { label: "Архів", activeClass: "bg-slate-600 text-white shadow-md shadow-slate-100" },
+  };
+
   return (
     <div className="animate-in fade-in space-y-8 duration-500">
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900">Дашборд</h1>
-        <p className="mt-1 text-sm text-slate-500">
-          Огляд усіх отриманих брифів
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900">Дашборд</h1>
+          <p className="mt-1 text-sm text-slate-500">
+            Огляд усіх отриманих брифів
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={() => window.location.reload()}>
+            Оновити дані
+          </Button>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
         <StatCard
-          label="Всього брифів"
+          label="Всього"
           value={data?.total || 0}
           color="text-slate-900"
         />
         <StatCard
-          label="Відправлено"
-          value={data?.submitted || 0}
+          label="Нові"
+          value={data?.new || 0}
+          color="text-blue-600"
+        />
+        <StatCard
+          label="На розгляді"
+          value={data?.reviewing || 0}
+          color="text-amber-600"
+        />
+        <StatCard
+          label="Прийняті"
+          value={data?.accepted || 0}
           color="text-emerald-600"
         />
         <StatCard
-          label="Чернетки"
-          value={data?.draft || 0}
-          color="text-amber-600"
+          label="Архів"
+          value={data?.archived || 0}
+          color="text-slate-500"
         />
       </div>
 
       <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-        <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50/50 px-6 py-4">
+        <div className="flex flex-col gap-4 border-b border-slate-100 bg-slate-50/50 px-6 py-4 md:flex-row md:items-center md:justify-between">
           <h2 className="text-base font-semibold text-slate-800">
             Список брифів
           </h2>
-          <div className="flex gap-1 rounded-lg bg-slate-200/50 p-1">
-            {(["ALL", "DRAFT", "SUBMITTED"] as const).map((tab) => (
+          <div className="flex flex-wrap gap-1 rounded-lg bg-slate-200/50 p-1">
+            {(Object.keys(tabConfigs) as TabType[]).map((tab) => (
               <Button
                 key={tab}
-                variant={activeTab === tab ? "outline" : "ghost"}
+                variant={activeTab === tab ? "primary" : "ghost"}
                 size="sm"
                 onClick={() => setActiveTab(tab)}
                 className={cn(
-                  "h-8 rounded-md border-none px-3 py-1 font-bold shadow-none",
+                  "h-8 rounded-md border-none px-4 py-1 font-bold shadow-none transition-all duration-300",
                   activeTab === tab
-                    ? "bg-white text-slate-950 shadow-sm"
-                    : "text-slate-500 hover:text-slate-700",
+                    ? tabConfigs[tab].activeClass
+                    : "text-slate-500 hover:text-slate-700 hover:bg-slate-200/50",
                 )}
               >
-                {tab === "ALL"
-                  ? "Всі"
-                  : tab === "DRAFT"
-                    ? "Чернетки"
-                    : "Відправлені"}
+                {tabConfigs[tab].label}
               </Button>
             ))}
           </div>

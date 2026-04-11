@@ -146,7 +146,7 @@ export const createBriefSchema = z.object({
 
 export const updateBriefSchema = z
   .object({
-    status: z.enum(["DRAFT", "SUBMITTED"]).optional(),
+    status: z.enum(["NEW", "REVIEWING", "ACCEPTED", "ARCHIVED"]).optional(),
     rawData: rawDataSchema.optional(),
   })
   .refine((data) => data.status !== undefined || data.rawData !== undefined, {

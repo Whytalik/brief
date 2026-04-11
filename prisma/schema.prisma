@@ -11,15 +11,17 @@ datasource db {
 }
 
 enum BriefStatus {
-  DRAFT
-  SUBMITTED
+  NEW
+  REVIEWING
+  ACCEPTED
+  ARCHIVED
 }
 
 model Brief {
   id        String      @id @default(cuid())
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt
-  status    BriefStatus @default(DRAFT)
+  status    BriefStatus @default(NEW)
   rawData   Json
 
   @@map("briefs")

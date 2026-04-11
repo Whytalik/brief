@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
     const brief = await prisma.brief.create({
       data: {
         rawData: input.rawData as Prisma.InputJsonValue,
-        status: "DRAFT",
+        status: "NEW",
       },
     });
     return created(brief);
