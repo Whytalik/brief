@@ -1,5 +1,5 @@
 import type { createBriefSchema, updateBriefSchema } from "@/schemas/brief";
-import type { BriefStatus } from "@prisma/client";
+import type { BriefStatus } from "../generated/prisma";
 import type { z } from "zod";
 
 export type { BriefStatus };
