@@ -1,58 +1,62 @@
 # Brief Collector (SaaS Platform Briefing Tool)
 
-Сучасний інструмент для збору вимог та брифування замовників на розробку SaaS-платформ. Проєкт створено в рамках лабораторної роботи з курсу "Економіка та менеджмент програмних систем".
+A modern tool for gathering requirements and briefing clients for SaaS platform development. This project was created as part of a laboratory work for the "Economics and Management of Software Systems" course.
 
-## 🚀 Технології
+## 🚀 Tech Stack
 
 - **Framework:** [Next.js 15 (App Router)](https://nextjs.org/)
 - **Language:** [TypeScript](https://www.typescript.org/)
-- **Database:** [Prisma](https://www.prisma.io/) з адаптером PostgreSQL
+- **Database:** [Prisma](https://www.prisma.io/) with PostgreSQL adapter
 - **Validation:** [Zod](https://zod.dev/) + [React Hook Form](https://react-hook-form.com/)
 - **Styling:** [Tailwind CSS](https://tailwindcss.com/)
-- **Security:** [Cloudflare Turnstile](https://www.cloudflare.com/products/turnstile/) (анти-бот) + JWT Auth для адмінки
+- **Security:** [Cloudflare Turnstile](https://www.cloudflare.com/products/turnstile/) (anti-bot) + JWT Auth for the admin panel
 
-## ✨ Особливості
+## ✨ Features
 
-- **13 логічних блоків:** Повне покриття бізнес та технічних вимог.
-- **Розумна валідація:** Поля адаптуються під вибір користувача (наприклад, Email стає обов'язковим лише якщо обрано відповідний канал зв'язку).
-- **Збереження чернетки:** Дані форми зберігаються в `localStorage`, що дозволяє не втратити прогрес при перезавантаженні.
-- **Адмін-панель:** Захищений розділ для перегляду та керування поданими брифами.
-- **B2B Success Page:** Професійна сторінка після відправки з чіткими наступними кроками.
+- **13 Logical Blocks:** Comprehensive coverage of business and technical requirements.
+- **Smart Validation:** Fields adapt based on user selection (e.g., Email becomes mandatory only if chosen as a contact method).
+- **Draft Persistence:** Form data is saved to `localStorage`, preventing progress loss on page reload.
+- **Protected Admin Panel:** Secure area to view and manage submitted briefs.
+- **B2B Success Page:** Professional post-submission page with clear next steps for the client.
 
-## 🛠️ Встановлення та запуск
+## 🛠️ Installation & Setup
 
-1.  **Клонуйте репозиторій:**
+1.  **Clone the repository:**
     ```bash
     git clone https://github.com/Whytalik/brief.git
     cd brief
     ```
 
-2.  **Встановіть залежності:**
+2.  **Install dependencies:**
     ```bash
     npm install
     ```
 
-3.  **Налаштуйте середовище:**
-    Створіть файл `.env` на основі `.env.example` та заповніть необхідні ключі (Database URL, Turnstile keys, JWT secret).
+3.  **Configure environment:**
+    Create a `.env` file based on `.env.example` and fill in the required keys (Database URL, Turnstile keys, JWT secret).
 
-4.  **Підготуйте базу даних:**
+4.  **Prepare the database:**
     ```bash
     npx prisma generate
     npx prisma db push
     ```
 
-5.  **Запустіть у режимі розробки:**
+5.  **Run in development mode:**
     ```bash
     npm run dev
     ```
 
-## 📂 Структура брифу
+## 📂 Brief Structure
 
-Детальний опис усіх запитань та типів полів доступний у файлі [docs/brief-structure.json](./docs/brief-structure.json).
+A detailed description of all questions and field types is available in the [docs/brief-structure.json](./docs/brief-structure.json) file.
 
-## 🛡️ Адмінка
+## 🛡️ Admin Panel
 
-Для доступу до панелі керування перейдіть за адресою `/admin`. Пароль хешується за допомогою `bcrypt`. Інструкція з генерації хешу є в `.env.example`.
+To access the management panel, go to `/admin`. Passwords are hashed using `bcrypt`. Instructions for generating the hash can be found in `.env.example`.
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](./LICENSE) file for details.
 
 ---
-Розроблено Віталієм (Whytalik)
+Developed by Vitalii (Whytalik)
