@@ -70,25 +70,37 @@ export default function MainForm({
     formState: { errors, isSubmitting },
   } = methods;
 
+  // Restore state on mount
   useEffect(() => {
     if (isExistingBrief) return;
 
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
       try {
-        const { cfToken, ...rest } = JSON.parse(saved);
+        const { cfToken, currentStep: savedStep, ...rest } = JSON.parse(saved);
         reset({ ...rest, cfToken: "" });
+        if (savedStep) {
+          setCurrentStep(Number(savedStep));
+        }
       } catch (e) {
         console.error("Failed to restore form state", e);
       }
     }
+  }, [isExistingBrief, reset]);
+
+  // Save progress whenever data or step changes
+  useEffect(() => {
+    if (isExistingBrief) return;
 
     const subscription = watch((value) => {
       const { cfToken, brandFiles, ...rest } = value;
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(rest));
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({ ...rest, currentStep })
+      );
     });
     return () => subscription.unsubscribe();
-  }, [isExistingBrief, reset, watch]);
+  }, [isExistingBrief, watch, currentStep]);
 
   const fileToBase64 = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
