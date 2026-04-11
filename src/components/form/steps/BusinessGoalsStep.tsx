@@ -1,25 +1,13 @@
 import { FormSection } from "@/components/form/FormSection";
-import { MultiSelect, Option } from "@/components/form/inputs/MultiSelect";
 import { TextAreaInput } from "@/components/form/inputs/TextAreaInput";
-import { TextInput } from "@/components/form/inputs/TextInput";
 import { BriefFormData } from "@/schemas/brief";
-import { Controller, useFormContext, useWatch } from "react-hook-form";
-
-const paymentOptions: Option[] = [
-  { label: "Stripe", value: "stripe" },
-  { label: "PayPal", value: "paypal" },
-  { label: "Fondy", value: "fondy" },
-  { label: "LiqPay", value: "liqpay" },
-  { label: "Інше", value: "other" },
-];
+import { useFormContext } from "react-hook-form";
 
 export function BusinessGoalsStep() {
   const {
     register,
-    control,
     formState: { errors },
   } = useFormContext<BriefFormData>();
-  const paymentSystems = useWatch({ control, name: "paymentSystems" });
 
   return (
     <FormSection
@@ -45,32 +33,14 @@ export function BusinessGoalsStep() {
           required
         />
 
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-          <Controller
-            control={control}
-            name="paymentSystems"
-            render={({ field }) => (
-              <MultiSelect
-                label="3.3 Чи потрібна інтеграція з платіжними системами?"
-                placeholder="Оберіть варіанти"
-                options={paymentOptions}
-                value={field.value}
-                onChange={field.onChange}
-                error={errors.paymentSystems?.message}
-                required
-              />
-            )}
-          />
-
-          <TextInput
-            label="Інші платіжні системи"
-            id="paymentSystemsOther"
-            placeholder="Вкажіть, якщо обрали 'Інше'"
-            {...register("paymentSystemsOther")}
-            error={errors.paymentSystemsOther?.message}
-            required={paymentSystems?.includes("other")}
-          />
-        </div>
+        <TextAreaInput
+          label="3.3 Чи потрібна інтеграція з платіжними системами?"
+          id="paymentSystems"
+          placeholder="Stripe, PayPal, Fondy, LiqPay тощо."
+          {...register("paymentSystems")}
+          error={errors.paymentSystems?.message}
+          required
+        />
 
         <TextAreaInput
           label="3.4 Які ризики можуть завадити бізнес-успіху, на вашу думку?"

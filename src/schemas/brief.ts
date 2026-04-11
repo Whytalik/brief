@@ -35,8 +35,7 @@ export const briefFormSchema = z
     businessGoals: z.string().min(10, "Будь ласка, опишіть бізнес-цілі"),
     monetization: z.string().min(5, "Будь ласка, опишіть модель монетизації"),
     businessRisks: z.string().min(10, "Будь ласка, опишіть можливі ризики"),
-    paymentSystems: z.array(z.string()).min(1, "Оберіть варіанти"),
-    paymentSystemsOther: z.string().optional().or(z.literal("")),
+    paymentSystems: z.string().min(5, "Будь ласка, опишіть вимоги до платіжних систем"),
 
     // Block 4
     idealUser: z.string().min(10, "Опишіть портрет користувача"),
@@ -78,7 +77,9 @@ export const briefFormSchema = z
     brandFiles: z.array(z.any()).optional(),
     designReferences: z.string().min(5, "Вкажіть референси"),
     designImpression: z.string().min(5, "Опишіть враження"),
-    designResponsive: z.string().min(5, "Опишіть важливість мобільної версії"),
+    designResponsive: z.enum(["yes", "no"], {
+      errorMap: () => ({ message: "Оберіть варіант" }),
+    }),
     designAccessibility: z.string().min(5, "Опишіть вимоги до доступності"),
     designAnimations: z.string().min(5, "Опишіть побажання щодо анімацій"),
 
@@ -111,18 +112,6 @@ export const briefFormSchema = z
 
     cfToken: z.string().optional(),
   })
-  .refine(
-    (data) => {
-      if (data.paymentSystems.includes("other")) {
-        return !!data.paymentSystemsOther && data.paymentSystemsOther.length > 0;
-      }
-      return true;
-    },
-    {
-      message: "Будь ласка, вкажіть платіжні системи",
-      path: ["paymentSystemsOther"],
-    },
-  )
   .refine(
     (data) => {
       if (data.onboardingType.includes("other")) {

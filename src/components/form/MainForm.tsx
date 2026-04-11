@@ -52,7 +52,7 @@ export default function MainForm({
     resolver: zodResolver(briefFormSchema),
     defaultValues: initialData || {
       contactMethods: [],
-      paymentSystems: [],
+      paymentSystems: "",
       onboardingType: [],
       brandFiles: [],
       cfToken: hideTurnstile ? "bypass" : "",
@@ -198,7 +198,6 @@ export default function MainForm({
           "businessGoals",
           "monetization",
           "paymentSystems",
-          "paymentSystemsOther",
           "businessRisks",
         ];
       case 4:

@@ -1,8 +1,17 @@
 import { FormSection } from "@/components/form/FormSection";
 import { FileUpload } from "@/components/form/inputs/FileUpload";
+import {
+  RadioGroupInput,
+  RadioOption,
+} from "@/components/form/inputs/RadioGroupInput";
 import { TextAreaInput } from "@/components/form/inputs/TextAreaInput";
 import { BriefFormData } from "@/schemas/brief";
 import { Controller, useFormContext } from "react-hook-form";
+
+const yesNoOptions: RadioOption[] = [
+  { label: "Так", value: "yes" },
+  { label: "Ні", value: "no" },
+];
 
 export function VisualDesignStep() {
   const {
@@ -58,13 +67,19 @@ export function VisualDesignStep() {
           required
         />
 
-        <TextAreaInput
-          label="9.4 Чи потрібна адаптація под мобільні пристрої?"
-          id="designResponsive"
-          placeholder="Наскільки важливо, щоб продуктом було зручно користуватися зі смартфона?"
-          {...register("designResponsive")}
-          error={errors.designResponsive?.message}
-          required
+        <Controller
+          control={control}
+          name="designResponsive"
+          render={({ field }) => (
+            <RadioGroupInput
+              label="9.4 Чи потрібна адаптація под мобільні пристрої?"
+              options={yesNoOptions}
+              value={field.value}
+              onChange={field.onChange}
+              error={errors.designResponsive?.message}
+              required
+            />
+          )}
         />
 
         <TextAreaInput
