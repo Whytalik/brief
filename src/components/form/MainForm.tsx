@@ -33,6 +33,7 @@ interface MainFormProps {
   readOnly?: boolean;
   onSubmitOverride?: (data: BriefFormData) => Promise<void>;
   hideTurnstile?: boolean;
+  isStepped?: boolean;
 }
 
 export default function MainForm({
@@ -40,6 +41,7 @@ export default function MainForm({
   readOnly = false,
   onSubmitOverride,
   hideTurnstile = false,
+  isStepped = true,
 }: MainFormProps = {}) {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
@@ -70,9 +72,9 @@ export default function MainForm({
     formState: { errors, isSubmitting },
   } = methods;
 
-  // Restore state on mount
+  // Restore state on mount - only for new briefs in stepped mode
   useEffect(() => {
-    if (isExistingBrief) return;
+    if (isExistingBrief || !isStepped) return;
 
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
@@ -86,11 +88,11 @@ export default function MainForm({
         console.error("Failed to restore form state", e);
       }
     }
-  }, [isExistingBrief, reset]);
+  }, [isExistingBrief, isStepped, reset]);
 
-  // Save progress whenever data or step changes
+  // Save progress whenever data or step changes - only for new briefs in stepped mode
   useEffect(() => {
-    if (isExistingBrief) return;
+    if (isExistingBrief || !isStepped) return;
 
     const subscription = watch((value) => {
       const { cfToken, brandFiles, ...rest } = value;
@@ -100,7 +102,7 @@ export default function MainForm({
       );
     });
     return () => subscription.unsubscribe();
-  }, [isExistingBrief, watch, currentStep]);
+  }, [isExistingBrief, isStepped, watch, currentStep]);
 
   const fileToBase64 = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
@@ -310,69 +312,102 @@ export default function MainForm({
   return (
     <FormProvider {...methods}>
       <form onSubmit={handleSubmit(onSubmit)} className="my-10">
-        <div className="mb-10 px-8">
-          <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-wider text-slate-500">
-            <span>
-              Крок {currentStep} з {TOTAL_STEPS}
-            </span>
-          </div>
-          <div className="mt-2 h-2 w-full rounded-full bg-slate-100">
-            <div
-              className="h-full rounded-full bg-blue-600 transition-all duration-500"
-              style={{ width: `${(currentStep / TOTAL_STEPS) * 100}%` }}
-            />
-          </div>
-        </div>
+        {isStepped ? (
+          <>
+            <div className="mb-10 px-8">
+              <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-wider text-slate-500">
+                <span>
+                  Крок {currentStep} з {TOTAL_STEPS}
+                </span>
+              </div>
+              <div className="mt-2 h-2 w-full rounded-full bg-slate-100">
+                <div
+                  className="h-full rounded-full bg-blue-600 transition-all duration-500"
+                  style={{ width: `${(currentStep / TOTAL_STEPS) * 100}%` }}
+                />
+              </div>
+            </div>
 
-        <div className="px-8">{renderStep()}</div>
+            <div className="px-8">{renderStep()}</div>
 
-        {!readOnly && (
-          <div className="mt-10 flex flex-col items-center gap-6 border-t border-slate-100 px-8 pt-10">
-            <div className="flex w-full justify-between">
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={prevStep}
-                disabled={currentStep === 1 || isSubmitting}
-                className={cn(currentStep === 1 && "invisible")}
-              >
-                <ChevronLeft className="mr-2 h-4 w-4" /> Назад
-              </Button>
+            {!readOnly && (
+              <div className="mt-10 flex flex-col items-center gap-6 border-t border-slate-100 px-8 pt-10">
+                <div className="flex w-full justify-between">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={prevStep}
+                    disabled={currentStep === 1 || isSubmitting}
+                    className={cn(currentStep === 1 && "invisible")}
+                  >
+                    <ChevronLeft className="mr-2 h-4 w-4" /> Назад
+                  </Button>
 
-              {currentStep < TOTAL_STEPS ? (
-                <Button
-                  type="button"
-                  onClick={nextStep}
-                  disabled={isSubmitting}
-                >
-                  Далі <ChevronRight className="ml-2 h-4 w-4" />
-                </Button>
-              ) : (
-                <div className="flex flex-col items-end gap-6">
-                  {!hideTurnstile && TURNSTILE_SITE_KEY && (
-                    <div className="flex flex-col items-end gap-2">
-                      <Turnstile
-                        key={turnstileKey}
-                        siteKey={TURNSTILE_SITE_KEY}
-                        onSuccess={(token) =>
-                          setValue("cfToken", token, { shouldValidate: true })
-                        }
-                        onExpire={() => setValue("cfToken", "")}
-                        onError={() => setValue("cfToken", "")}
-                      />
-                      {errors.cfToken && (
-                        <p className="text-xs font-medium text-red-500">
-                          {errors.cfToken.message}
-                        </p>
+                  {currentStep < TOTAL_STEPS ? (
+                    <Button
+                      type="button"
+                      onClick={nextStep}
+                      disabled={isSubmitting}
+                    >
+                      Далі <ChevronRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  ) : (
+                    <div className="flex flex-col items-end gap-6">
+                      {!hideTurnstile && TURNSTILE_SITE_KEY && (
+                        <div className="flex flex-col items-end gap-2">
+                          <Turnstile
+                            key={turnstileKey}
+                            siteKey={TURNSTILE_SITE_KEY}
+                            onSuccess={(token) =>
+                              setValue("cfToken", token, { shouldValidate: true })
+                            }
+                            onExpire={() => setValue("cfToken", "")}
+                            onError={() => setValue("cfToken", "")}
+                          />
+                          {errors.cfToken && (
+                            <p className="text-xs font-medium text-red-500">
+                              {errors.cfToken.message}
+                            </p>
+                          )}
+                        </div>
                       )}
+                      <Button type="submit" isLoading={isSubmitting}>
+                        <Check className="mr-2 h-4 w-4" /> Завершити та надіслати
+                      </Button>
                     </div>
                   )}
-                  <Button type="submit" isLoading={isSubmitting}>
-                    <Check className="mr-2 h-4 w-4" /> Завершити та надіслати
-                  </Button>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
+          </>
+        ) : (
+          <div className="space-y-16 px-8">
+            <ContactInfoStep />
+            <ProjectConceptStep />
+            <BusinessGoalsStep />
+            <TargetAudienceStep />
+            <CompetitionStep />
+            <DataArchitectureStep />
+            <FunctionalRequirementsStep />
+            <UserFlowStep />
+            <VisualDesignStep />
+            <ContentStep />
+            <IntegrationsStep />
+            <SecurityStep />
+            <ImplementationTermsStep />
+
+            {!readOnly && (
+              <div className="sticky bottom-8 z-10 mt-12 flex justify-end">
+                <Button 
+                  type="submit" 
+                  size="lg" 
+                  isLoading={isSubmitting}
+                  className="shadow-2xl shadow-blue-200"
+                >
+                  <Check className="mr-2 h-5 w-5" /> Зберегти зміни
+                </Button>
+              </div>
+            )}
           </div>
         )}
       </form>

@@ -21,6 +21,23 @@ export default function BriefManager({ brief }: { brief: Brief }) {
   const [isEditing, setIsEditing] = useState(false);
   const [currentStatus, setCurrentStatus] = useState(brief.status);
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+  const [showStatusModal, setShowStatusModal] = useState<{ status: string; label: string } | null>(null);
+
+  // Status sequence logic
+  const getNextAvailableStatuses = (status: string) => {
+    switch (status) {
+      case "NEW":
+        return ["REVIEWING", "ARCHIVED"];
+      case "REVIEWING":
+        return ["ACCEPTED", "ARCHIVED"];
+      case "ACCEPTED":
+        return ["ARCHIVED"];
+      case "ARCHIVED":
+        return ["REVIEWING"]; // Allow restoring from archive back to review
+      default:
+        return [];
+    }
+  };
 
   async function handleUpdate(data: BriefFormData) {
     try {
@@ -39,8 +56,12 @@ export default function BriefManager({ brief }: { brief: Brief }) {
     }
   }
 
-  async function handleStatusChange(newStatus: string) {
+  async function confirmStatusChange() {
+    if (!showStatusModal) return;
+    
     setIsUpdatingStatus(true);
+    const newStatus = showStatusModal.status;
+    
     try {
       const response = await fetch(`/api/brief/${brief.id}`, {
         method: "PUT",
@@ -51,6 +72,7 @@ export default function BriefManager({ brief }: { brief: Brief }) {
       if (!response.ok) throw new Error("Помилка при зміні статусу");
 
       setCurrentStatus(newStatus as any);
+      setShowStatusModal(null);
       router.refresh();
     } catch (err) {
       alert(err instanceof Error ? err.message : "Сталася помилка");
@@ -88,8 +110,40 @@ export default function BriefManager({ brief }: { brief: Brief }) {
     ARCHIVED: { label: "Архів", icon: <Archive size={14} />, color: "bg-slate-100 text-slate-700 border-slate-200 hover:bg-slate-200" },
   };
 
+  const nextStatuses = getNextAvailableStatuses(currentStatus);
+
   return (
     <div className="animate-in fade-in slide-in-from-bottom-2 space-y-8 duration-500">
+      {/* Confirmation Modal */}
+      {showStatusModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
+          <div className="w-full max-w-sm rounded-[2rem] bg-white p-8 shadow-2xl animate-in zoom-in-95 duration-200">
+            <h3 className="text-lg font-bold text-slate-900">Змінити статус?</h3>
+            <p className="mt-2 text-sm text-slate-500 leading-relaxed">
+              Ви збираєтеся змінити статус брифу на <span className="font-bold text-slate-900">"{showStatusModal.label}"</span>. Це вплине на його відображення в дашборді.
+            </p>
+            <div className="mt-8 flex gap-3">
+              <Button
+                variant="ghost"
+                className="flex-1"
+                onClick={() => setShowStatusModal(null)}
+                disabled={isUpdatingStatus}
+              >
+                Скасувати
+              </Button>
+              <Button
+                variant="primary"
+                className="flex-1"
+                onClick={confirmStatusChange}
+                isLoading={isUpdatingStatus}
+              >
+                Підтвердити
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="flex flex-col gap-4 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm md:flex-row md:items-center md:justify-between">
         <div className="flex flex-wrap items-center gap-3">
           <Button
@@ -103,19 +157,30 @@ export default function BriefManager({ brief }: { brief: Brief }) {
           <div className="hidden h-8 w-px bg-slate-200 md:block" />
 
           <div className="flex flex-wrap items-center gap-2">
-            {(Object.keys(statusConfig) as Array<keyof typeof statusConfig>).map((status) => (
-              <Button
-                key={status}
-                variant={currentStatus === status ? "primary" : "ghost"}
-                size="sm"
-                className={currentStatus === status ? statusConfig[status].color : "text-slate-400"}
-                onClick={() => handleStatusChange(status)}
-                disabled={isUpdatingStatus}
-                leftIcon={statusConfig[status].icon}
-              >
-                {statusConfig[status].label}
-              </Button>
-            ))}
+            {(Object.keys(statusConfig) as Array<keyof typeof statusConfig>).map((status) => {
+              const isActive = currentStatus === status;
+              const isAvailable = nextStatuses.includes(status);
+              
+              return (
+                <Button
+                  key={status}
+                  variant={isActive ? "primary" : "ghost"}
+                  size="sm"
+                  className={cn(
+                    isActive ? statusConfig[status].color : "text-slate-400",
+                    !isActive && !isAvailable && "opacity-30 cursor-not-allowed grayscale"
+                  )}
+                  onClick={() => {
+                    if (isActive) return;
+                    if (isAvailable) setShowStatusModal({ status, label: statusConfig[status].label });
+                  }}
+                  disabled={isUpdatingStatus || (!isActive && !isAvailable)}
+                  leftIcon={statusConfig[status].icon}
+                >
+                  {statusConfig[status].label}
+                </Button>
+              );
+            })}
           </div>
         </div>
 
@@ -153,6 +218,7 @@ export default function BriefManager({ brief }: { brief: Brief }) {
             initialData={brief.rawData as BriefFormData}
             readOnly={false}
             hideTurnstile={true}
+            isStepped={false}
             onSubmitOverride={handleUpdate}
           />
         ) : (
