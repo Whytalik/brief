@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import { briefFormSchema, type BriefFormData } from "@/schemas/brief";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Turnstile } from "@marsidev/react-turnstile";
-import { Check, ChevronLeft, ChevronRight } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, LayoutList, Layers } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { FieldValues, FormProvider, useForm } from "react-hook-form";
@@ -44,6 +44,7 @@ export default function MainForm({
   isStepped = true,
 }: MainFormProps = {}) {
   const router = useRouter();
+  const [internalStepped, setInternalStepped] = useState(isStepped);
   const [currentStep, setCurrentStep] = useState(1);
   const [turnstileKey, setTurnstileKey] = useState(0);
   const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
@@ -74,7 +75,7 @@ export default function MainForm({
 
   // Restore state on mount - only for new briefs in stepped mode
   useEffect(() => {
-    if (isExistingBrief || !isStepped) return;
+    if (isExistingBrief || !internalStepped) return;
 
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
@@ -88,11 +89,11 @@ export default function MainForm({
         console.error("Failed to restore form state", e);
       }
     }
-  }, [isExistingBrief, isStepped, reset]);
+  }, [isExistingBrief, internalStepped, reset]);
 
   // Save progress whenever data or step changes - only for new briefs in stepped mode
   useEffect(() => {
-    if (isExistingBrief || !isStepped) return;
+    if (isExistingBrief || !internalStepped) return;
 
     const subscription = watch((value) => {
       const { cfToken, brandFiles, ...rest } = value;
@@ -102,7 +103,7 @@ export default function MainForm({
       );
     });
     return () => subscription.unsubscribe();
-  }, [isExistingBrief, isStepped, watch, currentStep]);
+  }, [isExistingBrief, internalStepped, watch, currentStep]);
 
   const fileToBase64 = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
@@ -312,22 +313,52 @@ export default function MainForm({
   return (
     <FormProvider {...methods}>
       <form onSubmit={handleSubmit(onSubmit)} className="my-10">
-        {isStepped ? (
-          <>
-            <div className="mb-10 px-8">
-              <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-wider text-slate-500">
-                <span>
-                  Крок {currentStep} з {TOTAL_STEPS}
-                </span>
+        <div className="mb-10 flex flex-col gap-6 px-8 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-2 rounded-xl bg-slate-100 p-1">
+            <button
+              type="button"
+              onClick={() => setInternalStepped(true)}
+              className={cn(
+                "flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-bold transition-all",
+                internalStepped
+                  ? "bg-white text-slate-900 shadow-sm"
+                  : "text-slate-500 hover:text-slate-700"
+              )}
+            >
+              <Layers size={14} /> Покроково
+            </button>
+            <button
+              type="button"
+              onClick={() => setInternalStepped(false)}
+              className={cn(
+                "flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-bold transition-all",
+                !internalStepped
+                  ? "bg-white text-slate-900 shadow-sm"
+                  : "text-slate-500 hover:text-slate-700"
+              )}
+            >
+              <LayoutList size={14} /> Однією сторінкою
+            </button>
+          </div>
+
+          {internalStepped && (
+            <div className="flex flex-1 flex-col gap-2 sm:max-w-[200px]">
+              <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                <span>Прогрес заповнення</span>
+                <span>{Math.round((currentStep / TOTAL_STEPS) * 100)}%</span>
               </div>
-              <div className="mt-2 h-2 w-full rounded-full bg-slate-100">
+              <div className="h-1.5 w-full rounded-full bg-slate-100">
                 <div
                   className="h-full rounded-full bg-blue-600 transition-all duration-500"
                   style={{ width: `${(currentStep / TOTAL_STEPS) * 100}%` }}
                 />
               </div>
             </div>
+          )}
+        </div>
 
+        {internalStepped ? (
+          <>
             <div className="px-8">{renderStep()}</div>
 
             {!readOnly && (
@@ -404,7 +435,7 @@ export default function MainForm({
                   isLoading={isSubmitting}
                   className="shadow-2xl shadow-blue-200"
                 >
-                  <Check className="mr-2 h-5 w-5" /> Зберегти зміни
+                  <Check className="mr-2 h-5 w-5" /> {isExistingBrief ? "Зберегти зміни" : "Завершити та надіслати"}
                 </Button>
               </div>
             )}
