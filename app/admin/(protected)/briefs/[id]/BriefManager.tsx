@@ -194,7 +194,7 @@ export default function BriefManager({ brief }: { brief: Brief }) {
         </Button>
       </div>
 
-      <div className="overflow-hidden rounded-[32px] border border-slate-200 bg-white p-8 shadow-sm">
+      <div className="rounded-[32px] border border-slate-200 bg-white p-8 shadow-sm">
         <div className="mb-8 flex items-center justify-between border-b border-slate-100 pb-6">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-900 text-white">

@@ -79,24 +79,24 @@ export function BriefPreview({ data }: BriefPreviewProps) {
     };
 
     return (
-      <div className="group border-b border-slate-50 py-5 last:border-0">
-        <dt className="mb-1 text-xs font-semibold uppercase tracking-wider text-slate-400 transition-colors group-hover:text-slate-500">
+      <div className="group border-b border-slate-100 py-6 last:border-0">
+        <dt className="mb-2 text-sm font-bold uppercase tracking-wide text-slate-600 transition-colors group-hover:text-slate-900">
           {label}
         </dt>
-        <dd className="text-sm leading-relaxed text-slate-800">
+        <dd className="text-base leading-relaxed text-slate-950">
           {Array.isArray(value) ? (
             <div className="flex flex-wrap gap-2 pt-1">
               {value.map((item, i) => (
                 <span
                   key={i}
-                  className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-600"
+                  className="inline-flex items-center rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-700"
                 >
                   {displayValue(item)}
                 </span>
               ))}
             </div>
           ) : typeof value === "string" && value.includes("\n") ? (
-            <div className="whitespace-pre-wrap rounded-xl bg-slate-50/50 p-3 text-slate-700">
+            <div className="whitespace-pre-wrap py-1">
               {value}
             </div>
           ) : (
@@ -120,14 +120,14 @@ export function BriefPreview({ data }: BriefPreviewProps) {
     if (!hasContent) return null;
 
     return (
-      <section id={id} className="mb-12 scroll-mt-24">
-        <h2 className="mb-6 flex items-center gap-3 text-lg font-bold text-slate-900">
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 text-xs font-black text-blue-600">
+      <section id={id} className="mb-16 scroll-mt-24">
+        <h2 className="mb-6 flex items-center gap-3 text-xl font-black text-slate-900">
+          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-900 text-sm font-black text-white">
             {title.split(".")[0]}
           </span>
           {title.split(".")[1].trim()}
         </h2>
-        <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
+        <div className="rounded-3xl border border-slate-100 bg-white p-8 shadow-sm">
           <dl className="space-y-1">{children}</dl>
         </div>
       </section>
@@ -136,6 +136,7 @@ export function BriefPreview({ data }: BriefPreviewProps) {
 
   return (
     <div className="flex flex-col gap-8 lg:flex-row relative">
+      {/* Navigation Sidebar */}
       <aside className="lg:w-72 shrink-0">
         <div className="sticky top-24 max-h-[calc(100vh-8rem)] overflow-y-auto pr-4 scrollbar-hide">
           <nav className="space-y-1">
@@ -153,7 +154,7 @@ export function BriefPreview({ data }: BriefPreviewProps) {
                   "w-full px-4 py-3 text-left text-xs font-bold transition-all rounded-xl",
                   activeSection === section.id
                     ? "bg-slate-900 text-white shadow-lg shadow-slate-200"
-                    : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
+                    : "text-slate-500 hover:bg-slate-100 hover:text-slate-900"
                 )}
               >
                 {section.title}
@@ -163,6 +164,7 @@ export function BriefPreview({ data }: BriefPreviewProps) {
         </div>
       </aside>
 
+      {/* Content */}
       <div className="flex-1 min-w-0">
         <Section id="contact" title="1. Контактна інформація">
           <Field label="1.1 Ваше ім’я." value={data.name} />
@@ -171,15 +173,15 @@ export function BriefPreview({ data }: BriefPreviewProps) {
           <Field label="1.4 Зручний спосіб зв’язку." value={data.contactMethods} />
           <Field label="1.5 Години для зв’язку." value={data.contactHours} />
           {data.stakeholders && (data.stakeholders as any[]).length > 0 && (
-            <div className="py-4">
-              <dt className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
-                1.5 Чи є інші учасники проєкту?
+            <div className="py-6 border-b border-slate-100 last:border-0">
+              <dt className="mb-4 text-sm font-bold uppercase tracking-wide text-slate-600">
+                1.6 Чи є інші учасники проєкту?
               </dt>
-              <dd className="grid grid-cols-1 gap-3 md:grid-cols-2">
+              <dd className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 {(data.stakeholders as any[]).map((s, i) => (
-                  <div key={i} className="rounded-xl border border-slate-100 bg-slate-50/30 p-3">
-                    <p className="text-sm font-bold text-slate-800">{s.name}</p>
-                    <p className="text-xs text-slate-500">{s.role} • {s.contact}</p>
+                  <div key={i} className="rounded-2xl border border-slate-100 bg-slate-50/30 p-4">
+                    <p className="text-sm font-bold text-slate-900">{s.name}</p>
+                    <p className="text-xs text-slate-500 mt-1">{s.role} • {s.contact}</p>
                   </div>
                 ))}
               </dd>
@@ -236,7 +238,7 @@ export function BriefPreview({ data }: BriefPreviewProps) {
           <Field label="8.3 Який сценарій є найбільш критичним для успіху?" value={data.criticalScenario} />
           <Field label="8.4 Чи потрібен гостьовий доступ або публічні сторінки?" value={data.guestAccess} />
           <Field label="8.5 Як має відбуватися знайомство нового користувача з продуктом?" value={data.onboardingType} />
-          <Field label="1.5 Інші способи знайомства" value={data.onboardingOther} />
+          <Field label="8.6 Інші способи знайомства" value={data.onboardingOther} />
         </Section>
 
         <Section id="visual" title="9. Візуальний дизайн">
@@ -268,11 +270,11 @@ export function BriefPreview({ data }: BriefPreviewProps) {
         <Section id="implementation" title="13. Терміни та умови">
           <Field label="13.1 Чи є у вас готові специфікації (ТЗ, макети, діаграми)?" value={data.specifications} />
           <Field label="13.2 Чи є особливі вимоги до хостингу (де буде розміщено продукт)?" value={data.hostingRequirements} />
-          <Field label="1.5 Уточнення щодо хостингу" value={data.hostingNote} />
-          <Field label="13.3 Які терміни ви вважаєте реалістичними для MVP?" value={data.mvpTimeline} />
-          <Field label="13.4 Який бюджет ви орієнтовно закладаєте?" value={data.budgetRange} />
-          <Field label="13.5 Чи буде технічна підтримка користувачів після запуску?" value={data.supportPostLaunch} />
-          <Field label="13.6 Як ви бачите процес збору зворотного відгуку?" value={data.feedbackProcess} />
+          <Field label="13.3 Уточнення щодо хостингу" value={data.hostingNote} />
+          <Field label="13.4 Які терміни ви вважаєте реалістичними для MVP?" value={data.mvpTimeline} />
+          <Field label="13.5 Який бюджет ви орієнтовно закладаєте?" value={data.budgetRange} />
+          <Field label="13.6 Чи буде технічна підтримка користувачів після запуску?" value={data.supportPostLaunch} />
+          <Field label="13.7 Як ви бачите процес збору зворотного відгуку?" value={data.feedbackProcess} />
         </Section>
       </div>
     </div>
