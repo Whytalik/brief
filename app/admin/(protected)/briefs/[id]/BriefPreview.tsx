@@ -2,13 +2,13 @@
 
 import { BriefFormData } from "@/schemas/brief";
 import { cn } from "@/lib/utils";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 
 interface BriefPreviewProps {
   data: BriefFormData;
 }
 
-const SECTIONS = [
+const ALL_SECTIONS = [
   { id: "contact", title: "1. Контактна інформація" },
   { id: "concept", title: "2. Концепція проєкту" },
   { id: "goals", title: "3. Бізнес-цілі" },
@@ -25,32 +25,7 @@ const SECTIONS = [
 ];
 
 export function BriefPreview({ data }: BriefPreviewProps) {
-  const [activeSection, setActiveSection] = useState(SECTIONS[0].id);
-
-  // Intersection Observer for scroll-sync highlighting
-  useEffect(() => {
-    const observerOptions = {
-      rootMargin: "-10% 0px -80% 0px",
-      threshold: 0,
-    };
-
-    const handleIntersection = (entries: IntersectionObserverEntry[]) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          setActiveSection(entry.target.id);
-        }
-      });
-    };
-
-    const observer = new IntersectionObserver(handleIntersection, observerOptions);
-
-    SECTIONS.forEach((section) => {
-      const element = document.getElementById(section.id);
-      if (element) observer.observe(element);
-    });
-
-    return () => observer.disconnect();
-  }, []);
+  const [activeSection, setActiveSection] = useState("");
 
   const isEmpty = (value: any) => {
     if (value === null || value === undefined) return true;
@@ -59,6 +34,52 @@ export function BriefPreview({ data }: BriefPreviewProps) {
     if (typeof value === "object") return Object.keys(value).length === 0;
     return false;
   };
+
+  // Determine which sections are actually visible (not empty)
+  const visibleSections = useMemo(() => {
+    const sectionFields: Record<string, (keyof BriefFormData)[]> = {
+      contact: ["name", "phone", "email", "contactMethods", "contactHours", "stakeholders"],
+      concept: ["productIdea", "productProblem", "productDifference", "productOneLiner", "productMvpState", "productSuccessCriteria"],
+      goals: ["businessGoals", "monetization", "paymentSystems", "businessRisks"],
+      audience: ["idealUser", "audienceSegments", "technicalLevel", "acquisitionChannels"],
+      competition: ["competitors", "competitorsSWOT", "competitiveAdvantage"],
+      data: ["dataObjects", "dataRelationships", "bigData", "dataVersioning"],
+      functional: ["criticalFunctions", "fileHandling", "exportImport", "dataComplexity"],
+      flow: ["roles", "userScenarios", "criticalScenario", "guestAccess", "onboardingType", "onboardingOther"],
+      visual: ["brandInfo", "designReferences", "designImpression", "designResponsive", "designAccessibility", "designAnimations"],
+      content: ["contentCopywriter", "contentLanguages", "contentSamples"],
+      integrations: ["externalIntegrationsList", "customScripting", "notifications"],
+      security: ["securitySensitiveData", "securityRequirements"],
+      implementation: ["specifications", "hostingRequirements", "hostingNote", "mvpTimeline", "budgetRange", "supportPostLaunch", "feedbackProcess"],
+    };
+
+    return ALL_SECTIONS.filter(section => {
+      const fields = sectionFields[section.id];
+      return fields?.some(field => !isEmpty(data[field]));
+    });
+  }, [data]);
+
+  useEffect(() => {
+    if (visibleSections.length > 0 && !activeSection) {
+      setActiveSection(visibleSections[0].id);
+    }
+
+    const handleScroll = () => {
+      const sectionElements = visibleSections.map(s => document.getElementById(s.id));
+      const scrollPosition = window.scrollY + 200;
+
+      for (let i = sectionElements.length - 1; i >= 0; i--) {
+        const el = sectionElements[i];
+        if (el && el.offsetTop <= scrollPosition) {
+          setActiveSection(visibleSections[i].id);
+          break;
+        }
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [visibleSections, activeSection]);
 
   const Field = ({ label, value }: { label: string; value: any }) => {
     if (isEmpty(value)) return null;
@@ -77,7 +98,7 @@ export function BriefPreview({ data }: BriefPreviewProps) {
 
     return (
       <div className="border-b border-slate-50 py-6 last:border-0">
-        <dt className="mb-2 text-[13px] font-bold uppercase tracking-wider text-slate-500">
+        <dt className="mb-2 text-sm font-bold uppercase tracking-wider text-slate-500">
           {label}
         </dt>
         <dd className="text-base leading-relaxed text-slate-950 font-medium">
@@ -97,7 +118,7 @@ export function BriefPreview({ data }: BriefPreviewProps) {
               {value}
             </div>
           ) : (
-            <span>{displayValue(value)}</span>
+            <span className="text-slate-950">{displayValue(value)}</span>
           )}
         </dd>
       </div>
@@ -140,7 +161,7 @@ export function BriefPreview({ data }: BriefPreviewProps) {
             <p className="mb-4 px-3 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">
               Навігація
             </p>
-            {SECTIONS.map((section) => (
+            {visibleSections.map((section) => (
               <button
                 key={section.id}
                 onClick={() => {
@@ -171,7 +192,7 @@ export function BriefPreview({ data }: BriefPreviewProps) {
           <Field label="1.5 Години для зв’язку." value={data.contactHours} />
           {data.stakeholders && (data.stakeholders as any[]).length > 0 && (
             <div className="py-6 border-b border-slate-50 last:border-0">
-              <dt className="mb-4 text-[13px] font-bold uppercase tracking-wider text-slate-500">
+              <dt className="mb-4 text-sm font-bold uppercase tracking-wider text-slate-500">
                 1.6 Чи є інші учасники проєкту?
               </dt>
               <dd className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -203,7 +224,7 @@ export function BriefPreview({ data }: BriefPreviewProps) {
         </Section>
 
         <Section id="audience" title="4. Цільова аудиторія">
-          <Field label="4.1 Опишіть portrait вашого користувача." value={data.idealUser} />
+          <Field label="4.1 Опишіть портрет вашого користувача." value={data.idealUser} />
           <Field label="4.2 Які сегменти аудиторії ви хотіли б охопити в першу чергу?" value={data.audienceSegments} />
           <Field label="4.3 Чи є користувач технічно підготовленим?" value={data.technicalLevel} />
           <Field label="4.4 Як користувачі дізнаються про ваш продукт? Чи є канали залучення?" value={data.acquisitionChannels} />
