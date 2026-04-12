@@ -27,32 +27,29 @@ const SECTIONS = [
 export function BriefPreview({ data }: BriefPreviewProps) {
   const [activeSection, setActiveSection] = useState(SECTIONS[0].id);
 
+  // Intersection Observer for scroll-sync highlighting
   useEffect(() => {
-    const observers = SECTIONS.map((section) => {
-      const element = document.getElementById(section.id);
-      if (!element) return null;
+    const observerOptions = {
+      rootMargin: "-10% 0px -80% 0px",
+      threshold: 0,
+    };
 
-      const observer = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-              setActiveSection(section.id);
-            }
-          });
-        },
-        {
-          rootMargin: "-20% 0px -70% 0px",
-          threshold: 0,
+    const handleIntersection = (entries: IntersectionObserverEntry[]) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          setActiveSection(entry.target.id);
         }
-      );
+      });
+    };
 
-      observer.observe(element);
-      return observer;
+    const observer = new IntersectionObserver(handleIntersection, observerOptions);
+
+    SECTIONS.forEach((section) => {
+      const element = document.getElementById(section.id);
+      if (element) observer.observe(element);
     });
 
-    return () => {
-      observers.forEach((observer) => observer?.disconnect());
-    };
+    return () => observer.disconnect();
   }, []);
 
   const isEmpty = (value: any) => {
@@ -79,11 +76,11 @@ export function BriefPreview({ data }: BriefPreviewProps) {
     };
 
     return (
-      <div className="group border-b border-slate-100 py-6 last:border-0">
-        <dt className="mb-2 text-sm font-bold uppercase tracking-wide text-slate-600 transition-colors group-hover:text-slate-900">
+      <div className="border-b border-slate-50 py-6 last:border-0">
+        <dt className="mb-2 text-[13px] font-bold uppercase tracking-wider text-slate-500">
           {label}
         </dt>
-        <dd className="text-base leading-relaxed text-slate-950">
+        <dd className="text-base leading-relaxed text-slate-950 font-medium">
           {Array.isArray(value) ? (
             <div className="flex flex-wrap gap-2 pt-1">
               {value.map((item, i) => (
@@ -96,11 +93,11 @@ export function BriefPreview({ data }: BriefPreviewProps) {
               ))}
             </div>
           ) : typeof value === "string" && value.includes("\n") ? (
-            <div className="whitespace-pre-wrap py-1">
+            <div className="whitespace-pre-wrap py-1 text-slate-950">
               {value}
             </div>
           ) : (
-            <span className="font-medium">{displayValue(value)}</span>
+            <span>{displayValue(value)}</span>
           )}
         </dd>
       </div>
@@ -120,7 +117,7 @@ export function BriefPreview({ data }: BriefPreviewProps) {
     if (!hasContent) return null;
 
     return (
-      <section id={id} className="mb-16 scroll-mt-24">
+      <section id={id} className="mb-16 scroll-mt-32">
         <h2 className="mb-6 flex items-center gap-3 text-xl font-black text-slate-900">
           <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-900 text-sm font-black text-white">
             {title.split(".")[0]}
@@ -135,10 +132,10 @@ export function BriefPreview({ data }: BriefPreviewProps) {
   };
 
   return (
-    <div className="flex flex-col gap-8 lg:flex-row relative">
+    <div className="flex flex-col gap-8 lg:flex-row relative items-start">
       {/* Navigation Sidebar */}
-      <aside className="lg:w-72 shrink-0">
-        <div className="sticky top-24 max-h-[calc(100vh-8rem)] overflow-y-auto pr-4 scrollbar-hide">
+      <aside className="lg:w-72 shrink-0 sticky top-32">
+        <div className="max-h-[calc(100vh-10rem)] overflow-y-auto pr-4 scrollbar-hide">
           <nav className="space-y-1">
             <p className="mb-4 px-3 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">
               Навігація
@@ -153,8 +150,8 @@ export function BriefPreview({ data }: BriefPreviewProps) {
                 className={cn(
                   "w-full px-4 py-3 text-left text-xs font-bold transition-all rounded-xl",
                   activeSection === section.id
-                    ? "bg-slate-900 text-white shadow-lg shadow-slate-200"
-                    : "text-slate-500 hover:bg-slate-100 hover:text-slate-900"
+                    ? "bg-slate-900 text-white shadow-lg"
+                    : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
                 )}
               >
                 {section.title}
@@ -173,8 +170,8 @@ export function BriefPreview({ data }: BriefPreviewProps) {
           <Field label="1.4 Зручний спосіб зв’язку." value={data.contactMethods} />
           <Field label="1.5 Години для зв’язку." value={data.contactHours} />
           {data.stakeholders && (data.stakeholders as any[]).length > 0 && (
-            <div className="py-6 border-b border-slate-100 last:border-0">
-              <dt className="mb-4 text-sm font-bold uppercase tracking-wide text-slate-600">
+            <div className="py-6 border-b border-slate-50 last:border-0">
+              <dt className="mb-4 text-[13px] font-bold uppercase tracking-wider text-slate-500">
                 1.6 Чи є інші учасники проєкту?
               </dt>
               <dd className="grid grid-cols-1 gap-4 md:grid-cols-2">
