@@ -148,6 +148,10 @@ exports.Prisma.JsonNullValueFilter = {
   AnyNull: Prisma.AnyNull
 };
 exports.BriefStatus = exports.$Enums.BriefStatus = {
+  NEW: 'NEW',
+  REVIEWING: 'REVIEWING',
+  ACCEPTED: 'ACCEPTED',
+  ARCHIVED: 'ARCHIVED',
   DRAFT: 'DRAFT',
   SUBMITTED: 'SUBMITTED'
 };

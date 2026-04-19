@@ -1,8 +1,11 @@
 "use client";
 
-import { BriefFormData } from "@/schemas/brief";
+import { BriefFormData, stakeholderSchema } from "@/schemas/brief";
+import { z } from "zod";
 import { cn } from "@/lib/utils";
 import { useEffect, useState, useMemo } from "react";
+
+type Stakeholder = z.infer<typeof stakeholderSchema>;
 
 interface BriefPreviewProps {
   data: BriefFormData;
@@ -27,11 +30,11 @@ const ALL_SECTIONS = [
 export function BriefPreview({ data }: BriefPreviewProps) {
   const [activeSection, setActiveSection] = useState("");
 
-  const isEmpty = (value: any) => {
+  const isEmpty = (value: unknown) => {
     if (value === null || value === undefined) return true;
     if (typeof value === "string") return value.trim() === "";
     if (Array.isArray(value)) return value.length === 0;
-    if (typeof value === "object") return Object.keys(value).length === 0;
+    if (typeof value === "object" && value !== null) return Object.keys(value).length === 0;
     return false;
   };
 
@@ -81,10 +84,10 @@ export function BriefPreview({ data }: BriefPreviewProps) {
     return () => window.removeEventListener("scroll", handleScroll);
   }, [visibleSections, activeSection]);
 
-  const Field = ({ label, value }: { label: string; value: any }) => {
+  const Field = ({ label, value }: { label: string; value: unknown }) => {
     if (isEmpty(value)) return null;
 
-    const displayValue = (val: any) => {
+    const displayValue = (val: unknown) => {
       if (val === "yes") return "Так";
       if (val === "no") return "Ні";
       if (val === "partially") return "Частково";
@@ -134,7 +137,9 @@ export function BriefPreview({ data }: BriefPreviewProps) {
     title: string;
     children: React.ReactNode;
   }) => {
-    const hasContent = (children as any[]).some((child) => child !== null);
+    const hasContent = Array.isArray(children)
+      ? children.some((child) => child !== null)
+      : children !== null;
     if (!hasContent) return null;
 
     return (
@@ -190,13 +195,13 @@ export function BriefPreview({ data }: BriefPreviewProps) {
           <Field label="1.3 Email" value={data.email} />
           <Field label="1.4 Зручний спосіб зв’язку." value={data.contactMethods} />
           <Field label="1.5 Години для зв’язку." value={data.contactHours} />
-          {data.stakeholders && (data.stakeholders as any[]).length > 0 && (
+          {data.stakeholders && data.stakeholders.length > 0 && (
             <div className="py-6 border-b border-slate-50 last:border-0">
               <dt className="mb-4 text-sm font-bold uppercase tracking-wider text-slate-500">
                 1.6 Чи є інші учасники проєкту?
               </dt>
               <dd className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                {(data.stakeholders as any[]).map((s, i) => (
+                {(data.stakeholders as Stakeholder[]).map((s, i) => (
                   <div key={i} className="rounded-2xl border border-slate-100 bg-slate-50/30 p-4">
                     <p className="text-sm font-bold text-slate-900">{s.name}</p>
                     <p className="text-xs text-slate-500 mt-1">{s.role} • {s.contact}</p>

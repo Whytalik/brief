@@ -80,7 +80,7 @@ export default function MainForm({
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
       try {
-        const { cfToken, currentStep: savedStep, ...rest } = JSON.parse(saved);
+        const { cfToken: _cfToken, currentStep: savedStep, ...rest } = JSON.parse(saved);
         reset({ ...rest, cfToken: "" });
         if (savedStep) {
           setCurrentStep(Number(savedStep));
@@ -96,7 +96,7 @@ export default function MainForm({
     if (isExistingBrief || !internalStepped) return;
 
     const subscription = watch((value) => {
-      const { cfToken, brandFiles, ...rest } = value;
+      const { cfToken: _cfToken, brandFiles: _brandFiles, ...rest } = value;
       localStorage.setItem(
         STORAGE_KEY,
         JSON.stringify({ ...rest, currentStep })
@@ -129,7 +129,7 @@ export default function MainForm({
       }
 
       const { cfToken, brandFiles, ...formData } = data;
-      const processedFormData: any = { ...formData };
+      const processedFormData: Record<string, unknown> = { ...formData };
 
       if (brandFiles && Array.isArray(brandFiles)) {
         const base64Files = await Promise.all(
@@ -178,7 +178,7 @@ export default function MainForm({
 
   const nextStep = async () => {
     const stepFields = getFieldsForStep(currentStep);
-    const isValid = await trigger(stepFields as any);
+    const isValid = await trigger(stepFields as Parameters<typeof trigger>[0]);
     if (isValid) {
       setCurrentStep((prev) => Math.min(prev + 1, TOTAL_STEPS));
     }
@@ -428,15 +428,35 @@ export default function MainForm({
             <ImplementationTermsStep />
 
             {!readOnly && (
-              <div className="sticky bottom-8 z-10 mt-12 flex justify-end">
-                <Button 
-                  type="submit" 
-                  size="lg" 
-                  isLoading={isSubmitting}
-                  className="shadow-2xl shadow-blue-200"
-                >
-                  <Check className="mr-2 h-5 w-5" /> {isExistingBrief ? "Зберегти зміни" : "Завершити та надіслати"}
-                </Button>
+              <div className="mt-12 flex flex-col items-end gap-4">
+                {!hideTurnstile && TURNSTILE_SITE_KEY && (
+                  <div className="flex flex-col items-end gap-2">
+                    <Turnstile
+                      key={turnstileKey}
+                      siteKey={TURNSTILE_SITE_KEY}
+                      onSuccess={(token) =>
+                        setValue("cfToken", token, { shouldValidate: true })
+                      }
+                      onExpire={() => setValue("cfToken", "")}
+                      onError={() => setValue("cfToken", "")}
+                    />
+                    {errors.cfToken && (
+                      <p className="text-xs font-medium text-red-500">
+                        {errors.cfToken.message}
+                      </p>
+                    )}
+                  </div>
+                )}
+                <div className="sticky bottom-8 z-10">
+                  <Button
+                    type="submit"
+                    size="lg"
+                    isLoading={isSubmitting}
+                    className="shadow-2xl shadow-blue-200"
+                  >
+                    <Check className="mr-2 h-5 w-5" /> {isExistingBrief ? "Зберегти зміни" : "Завершити та надіслати"}
+                  </Button>
+                </div>
               </div>
             )}
           </div>

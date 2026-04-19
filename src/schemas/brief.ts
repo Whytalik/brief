@@ -22,6 +22,7 @@ export const briefFormSchema = z
       .array(z.string())
       .min(1, "Оберіть хоча б один спосіб зв'язку"),
     contactHours: z.string().min(1, "Вкажіть зручні години"),
+    stakeholders: z.array(stakeholderSchema).optional(),
 
     // Block 2
     productIdea: z.string().min(10, "Будь ласка, опишіть ідею детальніше"),

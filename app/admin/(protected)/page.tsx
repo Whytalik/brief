@@ -56,7 +56,7 @@ export default function AdminDashboardPage() {
     reviewing: number;
     accepted: number;
     archived: number;
-    recent: any[];
+    recent: { id: string; status: string; createdAt: string }[];
   } | null>(null);
   const [activeTab, setActiveTab] = useState<TabType>("ALL");
   const [loading, setLoading] = useState(true);
@@ -70,10 +70,10 @@ export default function AdminDashboardPage() {
 
         setData({
           total: briefs.length,
-          new: briefs.filter((b: any) => b.status === "NEW").length,
-          reviewing: briefs.filter((b: any) => b.status === "REVIEWING").length,
-          accepted: briefs.filter((b: any) => b.status === "ACCEPTED").length,
-          archived: briefs.filter((b: any) => b.status === "ARCHIVED").length,
+          new: briefs.filter((b: { status: string }) => b.status === "NEW").length,
+          reviewing: briefs.filter((b: { status: string }) => b.status === "REVIEWING").length,
+          accepted: briefs.filter((b: { status: string }) => b.status === "ACCEPTED").length,
+          archived: briefs.filter((b: { status: string }) => b.status === "ARCHIVED").length,
           recent: briefs,
         });
       } catch (error) {

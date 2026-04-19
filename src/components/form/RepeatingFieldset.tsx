@@ -101,7 +101,7 @@ export function RepeatingFieldset<T extends FieldValues>({
         {fields.length === 0 && (
           <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-200 p-8 text-center">
             <p className="text-sm text-gray-500">
-              Стейкхолдери не додані. Натисніть "Додати", щоб вказати контактну
+              Стейкхолдери не додані. Натисніть &quot;Додати&quot;, щоб вказати контактну
               особу.
             </p>
           </div>

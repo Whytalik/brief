@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/Button";
 import { prisma } from "@/lib/prisma";
+import { BriefFormData } from "@/schemas/brief";
 import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -35,7 +36,7 @@ export default async function BriefDetailPage({ params }: Props) {
         </div>
       </div>
 
-      <BriefManager brief={brief as any} />
+      <BriefManager brief={{ ...brief, rawData: brief.rawData as BriefFormData }} />
     </div>
   );
 }

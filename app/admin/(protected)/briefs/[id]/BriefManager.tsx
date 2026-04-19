@@ -3,16 +3,17 @@
 import MainForm from "@/components/form/MainForm";
 import { Button } from "@/components/ui/Button";
 import { BriefFormData } from "@/schemas/brief";
+import { BriefStatus } from "@/generated/prisma";
 import { cn } from "@/lib/utils";
-import { CheckCircle, Clock, Edit2, Trash2, X, Eye, FileText, Archive, Check } from "lucide-react";
+import { Clock, Edit2, Trash2, X, Eye, FileText, Archive, Check } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { BriefPreview } from "./BriefPreview";
 
 interface Brief {
   id: string;
-  status: "NEW" | "REVIEWING" | "ACCEPTED" | "ARCHIVED";
-  rawData: any;
+  status: BriefStatus;
+  rawData: BriefFormData;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -21,11 +22,12 @@ export default function BriefManager({ brief }: { brief: Brief }) {
   const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
   const [currentStatus, setCurrentStatus] = useState(brief.status);
+  const [currentRawData, setCurrentRawData] = useState(brief.rawData);
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
-  const [showStatusModal, setShowStatusModal] = useState<{ status: string; label: string } | null>(null);
+  const [showStatusModal, setShowStatusModal] = useState<{ status: BriefStatus; label: string } | null>(null);
 
   // Status sequence logic
-  const getNextAvailableStatuses = (status: string) => {
+  const getNextAvailableStatuses = (status: BriefStatus): BriefStatus[] => {
     switch (status) {
       case "NEW":
         return ["REVIEWING", "ARCHIVED"];
@@ -50,8 +52,8 @@ export default function BriefManager({ brief }: { brief: Brief }) {
 
       if (!response.ok) throw new Error("Помилка при оновленні");
 
+      setCurrentRawData(data);
       setIsEditing(false);
-      router.refresh();
     } catch (err) {
       alert(err instanceof Error ? err.message : "Сталася помилка");
     }
@@ -72,9 +74,8 @@ export default function BriefManager({ brief }: { brief: Brief }) {
 
       if (!response.ok) throw new Error("Помилка при зміні статусу");
 
-      setCurrentStatus(newStatus as any);
+      setCurrentStatus(newStatus);
       setShowStatusModal(null);
-      router.refresh();
     } catch (err) {
       alert(err instanceof Error ? err.message : "Сталася помилка");
     } finally {
@@ -98,7 +99,6 @@ export default function BriefManager({ brief }: { brief: Brief }) {
       if (!response.ok) throw new Error("Помилка при видаленні");
 
       router.push("/admin");
-      router.refresh();
     } catch (err) {
       alert(err instanceof Error ? err.message : "Сталася помилка");
     }
@@ -121,7 +121,7 @@ export default function BriefManager({ brief }: { brief: Brief }) {
           <div className="w-full max-w-sm rounded-[2rem] bg-white p-8 shadow-2xl animate-in zoom-in-95 duration-200">
             <h3 className="text-lg font-bold text-slate-900">Змінити статус?</h3>
             <p className="mt-2 text-sm text-slate-500 leading-relaxed">
-              Ви збираєтеся змінити статус брифу на <span className="font-bold text-slate-900">"{showStatusModal.label}"</span>. Це вплине на його відображення в дашборді.
+              Ви збираєтеся змінити статус брифу на <span className="font-bold text-slate-900">&quot;{showStatusModal.label}&quot;</span>. Це вплине на його відображення в дашборді.
             </p>
             <div className="mt-8 flex gap-3">
               <Button
@@ -216,14 +216,14 @@ export default function BriefManager({ brief }: { brief: Brief }) {
 
         {isEditing ? (
           <MainForm
-            initialData={brief.rawData as BriefFormData}
+            initialData={currentRawData}
             readOnly={false}
             hideTurnstile={true}
             isStepped={false}
             onSubmitOverride={handleUpdate}
           />
         ) : (
-          <BriefPreview data={brief.rawData as BriefFormData} />
+          <BriefPreview data={currentRawData} />
         )}
       </div>
     </div>

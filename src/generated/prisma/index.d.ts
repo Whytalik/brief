@@ -24,6 +24,10 @@ export type Brief = $Result.DefaultSelection<Prisma.$BriefPayload>
  */
 export namespace $Enums {
   export const BriefStatus: {
+  NEW: 'NEW',
+  REVIEWING: 'REVIEWING',
+  ACCEPTED: 'ACCEPTED',
+  ARCHIVED: 'ARCHIVED',
   DRAFT: 'DRAFT',
   SUBMITTED: 'SUBMITTED'
 };

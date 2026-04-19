@@ -10,7 +10,7 @@ import { prisma } from "@/lib/prisma";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 import { verifyTurnstile } from "@/lib/turnstile";
 import { createBriefSchema } from "@/schemas/brief";
-import { Prisma } from "@/generated/prisma";
+import { BriefStatus, Prisma } from "@/generated/prisma";
 import type { NextRequest } from "next/server";
 import { ZodError } from "zod";
 
@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
     const brief = await prisma.brief.create({
       data: {
         rawData: input.rawData as Prisma.InputJsonValue,
-        status: "NEW",
+        status: BriefStatus.NEW,
       },
     });
     return created(brief);

@@ -8,7 +8,7 @@ import {
 import { prisma } from "@/lib/prisma";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 import { updateBriefSchema } from "@/schemas/brief";
-import { Prisma } from "@/generated/prisma";
+import { BriefStatus, Prisma } from "@/generated/prisma";
 import type { NextRequest } from "next/server";
 import { ZodError } from "zod";
 
@@ -62,7 +62,7 @@ export async function PUT(request: NextRequest, { params }: RouteContext) {
     const updated = await prisma.brief.update({
       where: { id },
       data: {
-        ...(input.status && { status: input.status }),
+        ...(input.status && { status: input.status as BriefStatus }),
         ...(input.rawData && {
           rawData: input.rawData as Prisma.InputJsonValue,
         }),

@@ -5,7 +5,7 @@ import {
 } from "@/components/form/inputs/RadioGroupInput";
 import { TextAreaInput } from "@/components/form/inputs/TextAreaInput";
 import { BriefFormData } from "@/schemas/brief";
-import { Controller, useFormContext, useWatch } from "react-hook-form";
+import { Controller, useFormContext } from "react-hook-form";
 
 const yesNoOptions: RadioOption[] = [
   { label: "Так", value: "yes" },

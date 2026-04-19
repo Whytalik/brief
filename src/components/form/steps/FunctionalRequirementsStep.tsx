@@ -6,7 +6,6 @@ import { useFormContext } from "react-hook-form";
 export function FunctionalRequirementsStep() {
   const {
     register,
-    control,
     formState: { errors },
   } = useFormContext<BriefFormData>();
 

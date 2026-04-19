@@ -1,24 +1,11 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/Button";
 
 export default function SuccessPage() {
   const router = useRouter();
-  const [data, setData] = useState<Record<string, unknown> | null>(null);
-
-  useEffect(() => {
-    const raw = sessionStorage.getItem("briefFormData");
-    if (raw) {
-      try {
-        setData(JSON.parse(raw));
-      } catch {
-        setData(null);
-      }
-    }
-  }, []);
 
   return (
     <main className="min-h-screen bg-slate-100 px-6 py-10">

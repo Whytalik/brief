@@ -121,6 +121,10 @@ exports.Prisma.JsonNullValueFilter = {
   AnyNull: Prisma.AnyNull
 };
 exports.BriefStatus = exports.$Enums.BriefStatus = {
+  NEW: 'NEW',
+  REVIEWING: 'REVIEWING',
+  ACCEPTED: 'ACCEPTED',
+  ARCHIVED: 'ARCHIVED',
   DRAFT: 'DRAFT',
   SUBMITTED: 'SUBMITTED'
 };
@@ -136,7 +140,7 @@ const config = {
   "clientVersion": "7.7.0",
   "engineVersion": "75cbdc1eb7150937890ad5465d861175c6624711",
   "activeProvider": "postgresql",
-  "inlineSchema": "// This is your Prisma schema file.\n// Learn more about it in the docs: https://pris.ly/d/prisma-schema\n\ngenerator client {\n  provider = \"prisma-client-js\"\n  output   = \"../src/generated/prisma\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n}\n\nenum BriefStatus {\n  DRAFT\n  SUBMITTED\n}\n\nmodel Brief {\n  id        String      @id @default(cuid())\n  createdAt DateTime    @default(now())\n  updatedAt DateTime    @updatedAt\n  status    BriefStatus @default(DRAFT)\n  rawData   Json\n\n  @@map(\"briefs\")\n}\n"
+  "inlineSchema": "// This is your Prisma schema file.\n// Learn more about it in the docs: https://pris.ly/d/prisma-schema\n\ngenerator client {\n  provider = \"prisma-client-js\"\n  output   = \"../src/generated/prisma\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n}\n\nenum BriefStatus {\n  NEW\n  REVIEWING\n  ACCEPTED\n  ARCHIVED\n  DRAFT\n  SUBMITTED\n}\n\nmodel Brief {\n  id        String      @id @default(cuid())\n  createdAt DateTime    @default(now())\n  updatedAt DateTime    @updatedAt\n  status    BriefStatus @default(NEW)\n  rawData   Json\n\n  @@map(\"briefs\")\n}\n"
 }
 
 config.runtimeDataModel = JSON.parse("{\"models\":{\"Brief\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"status\",\"kind\":\"enum\",\"type\":\"BriefStatus\"},{\"name\":\"rawData\",\"kind\":\"scalar\",\"type\":\"Json\"}],\"dbName\":\"briefs\"}},\"enums\":{},\"types\":{}}")
