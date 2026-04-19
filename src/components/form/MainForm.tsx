@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/utils";
+import { toast } from "@/lib/toast";
 import { briefFormSchema, type BriefFormData } from "@/schemas/brief";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Turnstile } from "@marsidev/react-turnstile";
@@ -124,7 +125,7 @@ export default function MainForm({
 
     try {
       if (!hideTurnstile && TURNSTILE_SITE_KEY && !data.cfToken) {
-        alert("Будь ласка, пройдіть перевірку Turnstile");
+        toast.error("Будь ласка, пройдіть перевірку Turnstile");
         return;
       }
 
@@ -168,7 +169,7 @@ export default function MainForm({
       router.push("/success");
     } catch (error) {
       console.error("Submission error:", error);
-      alert(error instanceof Error ? error.message : "Сталася помилка");
+      toast.error(error instanceof Error ? error.message : "Сталася помилка");
       if (!hideTurnstile) {
         setTurnstileKey((prev) => prev + 1);
         setValue("cfToken", "");
