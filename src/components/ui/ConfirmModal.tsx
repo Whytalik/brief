@@ -31,7 +31,7 @@ export function ConfirmModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-sm">
-      <div className="animate-in zoom-in-95 w-full max-w-sm rounded-[2rem] bg-white p-8 shadow-2xl duration-200">
+      <div className="animate-in fade-in zoom-in-[0.98] w-full max-w-sm rounded-[2rem] bg-white p-8 shadow-2xl duration-150">
         <div className="flex flex-col items-center gap-4 text-center">
           <div
             className={cn(

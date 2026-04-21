@@ -27,18 +27,88 @@ const ALL_SECTIONS = [
   { id: "implementation", title: "13. Терміни та умови" },
 ];
 
+function isEmpty(value: unknown): boolean {
+  if (value === null || value === undefined) return true;
+  if (typeof value === "string") return value.trim() === "";
+  if (Array.isArray(value)) return value.length === 0;
+  if (typeof value === "object" && value !== null) return Object.keys(value).length === 0;
+  return false;
+}
+
+function displayValue(val: unknown): string {
+  if (val === "yes") return "Так";
+  if (val === "no") return "Ні";
+  if (val === "partially") return "Частково";
+  if (val === "not_sure") return "Не впевнений";
+  if (val === "none") return "Немає";
+  if (val === "on_premise") return "On-premise (власні сервери)";
+  if (val === "cloud") return "Cloud (хмарні сервери)";
+  if (val === "other") return "Інше";
+  return String(val);
+}
+
+function Field({ label, value }: { label: string; value: unknown }) {
+  if (isEmpty(value)) return null;
+
+  return (
+    <div className="border-b border-slate-50 py-6 last:border-0">
+      <dt className="mb-2 text-sm font-bold uppercase tracking-wider text-slate-500">
+        {label}
+      </dt>
+      <dd className="text-base leading-relaxed text-slate-950 font-medium">
+        {Array.isArray(value) ? (
+          <div className="flex flex-wrap gap-2 pt-1">
+            {value.map((item, i) => (
+              <span
+                key={i}
+                className="inline-flex items-center rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-700"
+              >
+                {displayValue(item)}
+              </span>
+            ))}
+          </div>
+        ) : typeof value === "string" && value.includes("\n") ? (
+          <div className="whitespace-pre-wrap py-1 text-slate-950">
+            {value}
+          </div>
+        ) : (
+          <span className="text-slate-950">{displayValue(value)}</span>
+        )}
+      </dd>
+    </div>
+  );
+}
+
+function Section({
+  id,
+  title,
+  children,
+}: {
+  id: string;
+  title: string;
+  children: React.ReactNode;
+}) {
+  const hasContent = Array.isArray(children)
+    ? children.some((child) => child !== null)
+    : children !== null;
+  if (!hasContent) return null;
+
+  return (
+    <section id={id} className="mb-16 scroll-mt-32">
+      <h2 className="mb-6 flex items-center gap-3 text-xl font-black text-slate-900">
+        <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-900 text-sm font-black text-white">
+          {title.split(".")[0]}
+        </span>
+        {title.split(".")[1].trim()}
+      </h2>
+      <div className="rounded-3xl border border-slate-100 bg-white p-8 shadow-sm">
+        <dl className="space-y-1">{children}</dl>
+      </div>
+    </section>
+  );
+}
+
 export function BriefPreview({ data }: BriefPreviewProps) {
-  const [activeSection, setActiveSection] = useState("");
-
-  const isEmpty = (value: unknown) => {
-    if (value === null || value === undefined) return true;
-    if (typeof value === "string") return value.trim() === "";
-    if (Array.isArray(value)) return value.length === 0;
-    if (typeof value === "object" && value !== null) return Object.keys(value).length === 0;
-    return false;
-  };
-
-  // Determine which sections are actually visible (not empty)
   const visibleSections = useMemo(() => {
     const sectionFields: Record<string, (keyof BriefFormData)[]> = {
       contact: ["name", "phone", "email", "contactMethods", "contactHours", "stakeholders"],
@@ -62,11 +132,9 @@ export function BriefPreview({ data }: BriefPreviewProps) {
     });
   }, [data]);
 
-  useEffect(() => {
-    if (visibleSections.length > 0 && !activeSection) {
-      setActiveSection(visibleSections[0].id);
-    }
+  const [activeSection, setActiveSection] = useState(() => visibleSections[0]?.id ?? "");
 
+  useEffect(() => {
     const handleScroll = () => {
       const sectionElements = visibleSections.map(s => document.getElementById(s.id));
       const scrollPosition = window.scrollY + 200;
@@ -82,80 +150,7 @@ export function BriefPreview({ data }: BriefPreviewProps) {
 
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [visibleSections, activeSection]);
-
-  const Field = ({ label, value }: { label: string; value: unknown }) => {
-    if (isEmpty(value)) return null;
-
-    const displayValue = (val: unknown) => {
-      if (val === "yes") return "Так";
-      if (val === "no") return "Ні";
-      if (val === "partially") return "Частково";
-      if (val === "not_sure") return "Не впевнений";
-      if (val === "none") return "Немає";
-      if (val === "on_premise") return "On-premise (власні сервери)";
-      if (val === "cloud") return "Cloud (хмарні сервери)";
-      if (val === "other") return "Інше";
-      return String(val);
-    };
-
-    return (
-      <div className="border-b border-slate-50 py-6 last:border-0">
-        <dt className="mb-2 text-sm font-bold uppercase tracking-wider text-slate-500">
-          {label}
-        </dt>
-        <dd className="text-base leading-relaxed text-slate-950 font-medium">
-          {Array.isArray(value) ? (
-            <div className="flex flex-wrap gap-2 pt-1">
-              {value.map((item, i) => (
-                <span
-                  key={i}
-                  className="inline-flex items-center rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-700"
-                >
-                  {displayValue(item)}
-                </span>
-              ))}
-            </div>
-          ) : typeof value === "string" && value.includes("\n") ? (
-            <div className="whitespace-pre-wrap py-1 text-slate-950">
-              {value}
-            </div>
-          ) : (
-            <span className="text-slate-950">{displayValue(value)}</span>
-          )}
-        </dd>
-      </div>
-    );
-  };
-
-  const Section = ({
-    id,
-    title,
-    children,
-  }: {
-    id: string;
-    title: string;
-    children: React.ReactNode;
-  }) => {
-    const hasContent = Array.isArray(children)
-      ? children.some((child) => child !== null)
-      : children !== null;
-    if (!hasContent) return null;
-
-    return (
-      <section id={id} className="mb-16 scroll-mt-32">
-        <h2 className="mb-6 flex items-center gap-3 text-xl font-black text-slate-900">
-          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-900 text-sm font-black text-white">
-            {title.split(".")[0]}
-          </span>
-          {title.split(".")[1].trim()}
-        </h2>
-        <div className="rounded-3xl border border-slate-100 bg-white p-8 shadow-sm">
-          <dl className="space-y-1">{children}</dl>
-        </div>
-      </section>
-    );
-  };
+  }, [visibleSections]);
 
   return (
     <div className="flex flex-col gap-8 lg:flex-row relative items-start">
@@ -190,11 +185,11 @@ export function BriefPreview({ data }: BriefPreviewProps) {
       {/* Content */}
       <div className="flex-1 min-w-0">
         <Section id="contact" title="1. Контактна інформація">
-          <Field label="1.1 Ваше ім’я." value={data.name} />
+          <Field label="1.1 Ваше ім'я." value={data.name} />
           <Field label="1.2 Номер телефону." value={data.phone} />
           <Field label="1.3 Email" value={data.email} />
-          <Field label="1.4 Зручний спосіб зв’язку." value={data.contactMethods} />
-          <Field label="1.5 Години для зв’язку." value={data.contactHours} />
+          <Field label="1.4 Зручний спосіб зв'язку." value={data.contactMethods} />
+          <Field label="1.5 Години для зв'язку." value={data.contactHours} />
           {data.stakeholders && data.stakeholders.length > 0 && (
             <div className="py-6 border-b border-slate-50 last:border-0">
               <dt className="mb-4 text-sm font-bold uppercase tracking-wider text-slate-500">
@@ -243,7 +238,7 @@ export function BriefPreview({ data }: BriefPreviewProps) {
 
         <Section id="data" title="6. Архітектура даних">
           <Field label="6.1 Чим саме ви будете керувати у системі?" value={data.dataObjects} />
-          <Field label="6.2 Чи пов’язані ці елементи між собою? Якщо так, то як саме?" value={data.dataRelationships} />
+          <Field label="6.2 Чи пов'язані ці елементи між собою? Якщо так, то як саме?" value={data.dataRelationships} />
           <Field label="6.3 Чи планується робота з великими обсягами даних?" value={data.bigData} />
           <Field label="6.4 Чи потрібна історія змін або версійність даних?" value={data.dataVersioning} />
         </Section>
@@ -268,8 +263,8 @@ export function BriefPreview({ data }: BriefPreviewProps) {
           <Field label="9.1 Чи є у вас впізнаваний бренд (логотип, кольори шрифти)?" value={data.brandInfo} />
           <Field label="9.2 Чи є референси (приклади інтерфейсів), які вам подобаються?" value={data.designReferences} />
           <Field label="9.3 Яке загальне враження має створювати дизайн?" value={data.designImpression} />
-          <Field label="9.4 Чи потрібна адаптація под мобільні пристрої?" value={data.designResponsive} />
-          <Field label="9.5 Чи важливо, щоб продукту був зручний для всіх користувач, включно з людьми з обмеженими можливостями?" value={data.designAccessibility} />
+          <Field label="9.4 Чи потрібна адаптація під мобільні пристрої?" value={data.designResponsive} />
+          <Field label="9.5 Чи важливо, щоб продукту був зручний для всіх користувачів, включно з людьми з обмеженими можливостями?" value={data.designAccessibility} />
           <Field label="9.6 Чи має інтерфейс бути насиченим переходами та анімаціями?" value={data.designAnimations} />
         </Section>
 

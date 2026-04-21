@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 const rawDataSchema = z
-  .record(z.unknown())
+  .record(z.string(), z.unknown())
   .refine((val) => Object.keys(val).length > 0, {
     message: "Дані не можуть бути порожніми",
   });
@@ -42,7 +42,7 @@ export const briefFormSchema = z
     idealUser: z.string().min(10, "Опишіть портрет користувача"),
     audienceSegments: z.string().min(10, "Опишіть сегменти"),
     technicalLevel: z.enum(["yes", "no", "partially"], {
-      errorMap: () => ({ message: "Оберіть рівень підготовки" }),
+      error: "Оберіть рівень підготовки",
     }),
     roles: z.string().min(5, "Опишіть ролі в системі"),
     acquisitionChannels: z.string().min(10, "Опишіть канали залучення"),
@@ -56,7 +56,7 @@ export const briefFormSchema = z
     dataObjects: z.string().min(5, "Опишіть типи об'єктів"),
     dataRelationships: z.string().min(5, "Опишіть зв'язки"),
     bigData: z.enum(["yes", "no", "not_sure"], {
-      errorMap: () => ({ message: "Оберіть варіант" }),
+      error: "Оберіть варіант",
     }),
     dataVersioning: z.string().min(5, "Вкажіть потребу у версійності"),
 
@@ -79,7 +79,7 @@ export const briefFormSchema = z
     designReferences: z.string().min(5, "Вкажіть референси"),
     designImpression: z.string().min(5, "Опишіть враження"),
     designResponsive: z.enum(["yes", "no"], {
-      errorMap: () => ({ message: "Оберіть варіант" }),
+      error: "Оберіть варіант",
     }),
     designAccessibility: z.string().min(5, "Опишіть вимоги до доступності"),
     designAnimations: z.string().min(5, "Опишіть побажання щодо анімацій"),
@@ -92,7 +92,7 @@ export const briefFormSchema = z
     // Block 11
     externalIntegrationsList: z.string().optional().or(z.literal("")),
     customScripting: z.enum(["yes", "no"], {
-      errorMap: () => ({ message: "Оберіть варіант" }),
+      error: "Оберіть варіант",
     }),
     notifications: z.string().min(5, "Опишіть систему сповіщень"),
 
@@ -103,7 +103,7 @@ export const briefFormSchema = z
     // Block 13
     specifications: z.string().min(5, "Вкажіть наявність ТЗ/макетів"),
     hostingRequirements: z.enum(["none", "on_premise", "cloud", "other"], {
-      errorMap: () => ({ message: "Оберіть варіант хостингу" }),
+      error: "Оберіть варіант хостингу",
     }),
     hostingNote: z.string().optional().or(z.literal("")),
     mvpTimeline: z.string().min(5, "Опишіть очікувані терміни"),

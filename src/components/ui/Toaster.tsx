@@ -30,7 +30,7 @@ function ToastItem({ toast }: { toast: Toast }) {
       className={cn(
         "flex w-full max-w-sm items-start gap-3 rounded-2xl border px-4 py-3 shadow-lg shadow-slate-200/60 transition-all duration-300",
         styles[toast.type],
-        visible ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0",
+        visible ? "translate-y-0 opacity-100" : "translate-y-1 opacity-0",
       )}
     >
       {icons[toast.type]}

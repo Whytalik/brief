@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/Button";
-import { prisma } from "@/lib/prisma";
+import { briefService } from "@/services/brief.service";
 import { BriefFormData } from "@/schemas/brief";
 import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
@@ -13,7 +13,7 @@ type Props = { params: Promise<{ id: string }> };
 export default async function BriefDetailPage({ params }: Props) {
   const { id } = await params;
 
-  const brief = await prisma.brief.findUnique({ where: { id } });
+  const brief = await briefService.getById(id);
   if (!brief) notFound();
 
   return (

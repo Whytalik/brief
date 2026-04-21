@@ -5,25 +5,26 @@ import {
   internalError,
   ok,
   tooManyRequests,
+  unauthorized,
 } from "@/lib/api-response";
-import { prisma } from "@/lib/prisma";
+import { getTokenFromRequest, verifyAdminToken } from "@/lib/auth";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 import { verifyTurnstile } from "@/lib/turnstile";
+import { briefService } from "@/services/brief.service";
 import { createBriefSchema } from "@/schemas/brief";
-import { BriefStatus, Prisma } from "@/generated/prisma";
 import type { NextRequest } from "next/server";
 import { ZodError } from "zod";
 
-// GET /api/brief — list all briefs
+// GET /api/brief — list all briefs (admin only)
 export async function GET(request: NextRequest) {
+  const token = getTokenFromRequest(request);
+  if (!token || !(await verifyAdminToken(token))) return unauthorized();
+
   const ip = getClientIp(request);
-  const limit = checkRateLimit(ip);
-  if (!limit.allowed) return tooManyRequests();
+  if (!checkRateLimit(ip).allowed) return tooManyRequests();
 
   try {
-    const briefs = await prisma.brief.findMany({
-      orderBy: { createdAt: "desc" },
-    });
+    const briefs = await briefService.getAll();
     return ok(briefs);
   } catch (err) {
     console.error("[GET /api/brief]", err);
@@ -31,11 +32,10 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST /api/brief — create a brief
+// POST /api/brief — create a brief (public)
 export async function POST(request: NextRequest) {
   const ip = getClientIp(request);
-  const limit = checkRateLimit(ip);
-  if (!limit.allowed) return tooManyRequests();
+  if (!checkRateLimit(ip).allowed) return tooManyRequests();
 
   let body: unknown;
   try {
@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
     input = createBriefSchema.parse(body);
   } catch (err) {
     if (err instanceof ZodError) {
-      return badRequest(err.errors.map((e) => e.message).join(", "));
+      return badRequest(err.issues.map((e) => e.message).join(", "));
     }
     return badRequest();
   }
@@ -60,12 +60,9 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const brief = await prisma.brief.create({
-      data: {
-        rawData: input.rawData as Prisma.InputJsonValue,
-        status: BriefStatus.NEW,
-      },
-    });
+    const brief = await briefService.create(
+      input.rawData as Record<string, unknown>,
+    );
     return created(brief);
   } catch (err) {
     console.error("[POST /api/brief]", err);

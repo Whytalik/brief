@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/Button";
 import { getAdminSession } from "@/lib/auth";
+import { LogoutButton } from "@/components/layout/LogoutButton";
 import Link from "next/link";
-import { LogoutButton } from "./LogoutButton";
 
 export default async function Header() {
   const authenticated = await getAdminSession();
@@ -12,7 +12,7 @@ export default async function Header() {
         <div className="flex items-center gap-6">
           <Link
             href="/"
-            className="flex items-center gap-2.5 font-bold text-white transition-all hover:opacity-90 active:scale-95"
+            className="flex items-center gap-2.5 font-bold text-white transition-opacity hover:opacity-80"
           >
             <div className="flex h-9 w-9 items-center justify-center rounded-xl shadow-inner">
               <span className="text-xl">📋</span>

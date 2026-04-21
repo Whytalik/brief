@@ -1,7 +1,7 @@
-import { badRequest, internalError, tooManyRequests } from "@/lib/api-response";
-import { SESSION_COOKIE, signAdminToken } from "@/lib/auth";
+import { badRequest, tooManyRequests } from "@/lib/api-response";
+import { SESSION_COOKIE } from "@/lib/auth";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
-import bcrypt from "bcryptjs";
+import { verifyAdminPassword } from "@/services/auth.service";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { z, ZodError } from "zod";
@@ -28,28 +28,17 @@ export async function POST(request: NextRequest) {
   try {
     input = loginSchema.parse(body);
   } catch (err) {
-    if (err instanceof ZodError) return badRequest(err.errors[0].message);
+    if (err instanceof ZodError) return badRequest(err.issues[0].message);
     return badRequest();
   }
 
-  const hashBase64 = process.env.ADMIN_PASSWORD_HASH;
-  if (!hashBase64) {
-    console.error("ADMIN_PASSWORD_HASH is not configured");
-    return internalError();
+  const result = await verifyAdminPassword(input.password);
+  if (!result.ok) {
+    return NextResponse.json({ error: result.error }, { status: 401 });
   }
-
-  const hash = Buffer.from(hashBase64, "base64").toString("utf8");
-
-  const valid = await bcrypt.compare(input.password, hash);
-
-  if (!valid) {
-    return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
-  }
-
-  const token = await signAdminToken();
 
   const response = NextResponse.json({ ok: true });
-  response.cookies.set(SESSION_COOKIE, token, {
+  response.cookies.set(SESSION_COOKIE, result.token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "strict",

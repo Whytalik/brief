@@ -42,7 +42,7 @@ export function RadioGroupInput({
               type="button"
               onClick={() => onChange(option.value)}
               className={cn(
-                "inline-flex items-center justify-center rounded-xl border px-4 py-2.5 text-sm font-medium transition-all duration-200",
+                "inline-flex items-center justify-center rounded-xl border px-4 py-2.5 text-sm font-medium transition-colors duration-150",
                 isSelected
                   ? "border-blue-600 bg-blue-50 text-blue-700 ring-1 ring-blue-600"
                   : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50",

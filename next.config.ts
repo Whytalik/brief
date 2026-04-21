@@ -2,12 +2,8 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
-  typescript: {
-    ignoreBuildErrors: true,
-  },
+  outputFileTracingRoot: process.cwd(),
+  serverExternalPackages: ["@prisma/client", "@prisma/adapter-pg"],
 };
 
 export default nextConfig;

@@ -4,25 +4,29 @@ import {
   notFound,
   ok,
   tooManyRequests,
+  unauthorized,
 } from "@/lib/api-response";
-import { prisma } from "@/lib/prisma";
+import { getTokenFromRequest, verifyAdminToken } from "@/lib/auth";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
+import { briefService } from "@/services/brief.service";
 import { updateBriefSchema } from "@/schemas/brief";
-import { BriefStatus, Prisma } from "@/generated/prisma";
 import type { NextRequest } from "next/server";
 import { ZodError } from "zod";
 
 type RouteContext = { params: Promise<{ id: string }> };
 
-// GET /api/brief/[id] — get one brief
+// GET /api/brief/[id] — get one brief (admin only)
 export async function GET(request: NextRequest, { params }: RouteContext) {
+  const token = getTokenFromRequest(request);
+  if (!token || !(await verifyAdminToken(token))) return unauthorized();
+
   const ip = getClientIp(request);
   if (!checkRateLimit(ip).allowed) return tooManyRequests();
 
   const { id } = await params;
 
   try {
-    const brief = await prisma.brief.findUnique({ where: { id } });
+    const brief = await briefService.getById(id);
     if (!brief) return notFound("Бриф не знайдено");
     return ok(brief);
   } catch (err) {
@@ -31,8 +35,11 @@ export async function GET(request: NextRequest, { params }: RouteContext) {
   }
 }
 
-// PUT /api/brief/[id] — update a brief
+// PUT /api/brief/[id] — update a brief (admin only)
 export async function PUT(request: NextRequest, { params }: RouteContext) {
+  const token = getTokenFromRequest(request);
+  if (!token || !(await verifyAdminToken(token))) return unauthorized();
+
   const ip = getClientIp(request);
   if (!checkRateLimit(ip).allowed) return tooManyRequests();
 
@@ -50,24 +57,14 @@ export async function PUT(request: NextRequest, { params }: RouteContext) {
     input = updateBriefSchema.parse(body);
   } catch (err) {
     if (err instanceof ZodError) {
-      return badRequest(err.errors.map((e) => e.message).join(", "));
+      return badRequest(err.issues.map((e) => e.message).join(", "));
     }
     return badRequest();
   }
 
   try {
-    const existing = await prisma.brief.findUnique({ where: { id } });
-    if (!existing) return notFound("Бриф не знайдено");
-
-    const updated = await prisma.brief.update({
-      where: { id },
-      data: {
-        ...(input.status && { status: input.status as BriefStatus }),
-        ...(input.rawData && {
-          rawData: input.rawData as Prisma.InputJsonValue,
-        }),
-      },
-    });
+    const updated = await briefService.update(id, input);
+    if (!updated) return notFound("Бриф не знайдено");
     return ok(updated);
   } catch (err) {
     console.error("[PUT /api/brief/[id]]", err);
@@ -75,18 +72,19 @@ export async function PUT(request: NextRequest, { params }: RouteContext) {
   }
 }
 
-// DELETE /api/brief/[id] — delete a brief
+// DELETE /api/brief/[id] — delete a brief (admin only)
 export async function DELETE(request: NextRequest, { params }: RouteContext) {
+  const token = getTokenFromRequest(request);
+  if (!token || !(await verifyAdminToken(token))) return unauthorized();
+
   const ip = getClientIp(request);
   if (!checkRateLimit(ip).allowed) return tooManyRequests();
 
   const { id } = await params;
 
   try {
-    const existing = await prisma.brief.findUnique({ where: { id } });
-    if (!existing) return notFound("Brief not found");
-
-    await prisma.brief.delete({ where: { id } });
+    const deleted = await briefService.remove(id);
+    if (!deleted) return notFound("Бриф не знайдено");
     return ok({ deleted: true });
   } catch (err) {
     console.error("[DELETE /api/brief/[id]]", err);

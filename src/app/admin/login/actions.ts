@@ -1,8 +1,8 @@
 "use server";
 
-import { SESSION_COOKIE, signAdminToken } from "@/lib/auth";
+import { SESSION_COOKIE } from "@/lib/auth";
 import { checkRateLimit } from "@/lib/rate-limit";
-import bcrypt from "bcryptjs";
+import { verifyAdminPassword } from "@/services/auth.service";
 import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 
@@ -26,25 +26,14 @@ export async function loginAction(
 
   const password = formData.get("password");
   if (!password || typeof password !== "string" || password.trim() === "") {
-    return { error: "Пароль обов’язковий" };
+    return { error: "Пароль обов'язковий" };
   }
 
-  const hashBase64 = process.env.ADMIN_PASSWORD_HASH;
-  if (!hashBase64) {
-    console.error("ADMIN_PASSWORD_HASH is not configured");
-    return { error: "Помилка конфігурації сервера" };
-  }
+  const result = await verifyAdminPassword(password);
+  if (!result.ok) return { error: result.error };
 
-  const hash = Buffer.from(hashBase64, "base64").toString("utf8");
-  const valid = await bcrypt.compare(password, hash);
-
-  if (!valid) {
-    return { error: "Невірний пароль" };
-  }
-
-  const token = await signAdminToken();
   const cookieStore = await cookies();
-  cookieStore.set(SESSION_COOKIE, token, {
+  cookieStore.set(SESSION_COOKIE, result.token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "strict",
